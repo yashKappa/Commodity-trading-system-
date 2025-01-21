@@ -1,0 +1,159 @@
+/* Navbar.css */
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #333;
+    color: white;
+}
+
+.navbar-logo img {
+    height: 40px;
+}
+
+.navbar-links {
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+}
+
+.navbar-link {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.navbar-link:hover {
+    background-color: #555;
+}
+
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 3px 0;
+    transition: all 0.3s ease;
+}
+
+.open .bar:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.open .bar:nth-child(2) {
+    opacity: 0;
+}
+
+.open .bar:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+
+.dropdown-menu {
+    list-style: none;
+    position: absolute;
+    background-color: #333;
+    display: none;
+    flex-direction: column;
+    width: 150px;
+    right: 0;  /* Set to right side */
+    margin-top: 0.5rem;
+}
+
+.dropdown-menu.open {
+    display: flex;
+}
+
+.dropdown-menu .navbar-link {
+    padding: 0.5rem 1rem;
+}
+
+.navbar-logout .navbar-link{
+    background-color: rgb(255, 255, 255);
+    border-radius: 0.3rem;
+    color: #000000;
+    font-weight: bold;
+}
+
+.navbar-logout .navbar-link:hover{
+    background-color: rgb(247, 50, 50);
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .navbar-links {
+        display: none;
+        flex-direction: column;
+        width: 50%;
+        position: absolute;
+        top: 60px;
+        background-color: #333;
+        padding: 1rem 2rem;
+        gap: 0.5rem;
+        height: 100vh;
+        right: 0%;
+    }
+
+    .navbar-links.open {
+        display: flex;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+}
+
+@media (min-width: 769px) {
+    .menu-toggle {
+        display: none;
+    }
+
+    .navbar-links {
+        display: flex;
+    }
+}
+
+/* Navbar.css */
+
+.bottom-navbar {
+    display: flex;
+    justify-content: space-around;
+    background-color: #333;
+    color: white;
+    padding: 1rem 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    gap: 1rem;
+    display: none;
+}
+
+.bottom-navbar-link {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.bottom-navbar-link:hover {
+    background-color: #555;
+}
+
+@media (max-width: 768px) {
+
+    .bottom-navbar {
+        display: flex;
+    }
+}
