@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from './firebase'; // Correct import for Firebase and Firestore
+import { auth, db } from './firebase'; 
+import { getAuth } from 'firebase/auth';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import './AuthPage.css';
 
 const AuthPage = () => {
+  const auth = getAuth(); 
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
@@ -16,6 +18,17 @@ const AuthPage = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setMessage('Welcome back!');
+        navigate('/home');
+      }
+    });
+
+    return () => unsubscribe(); 
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -23,29 +36,29 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, formData.email, formData.password);
         setMessage('Logged in successfully!');
-        navigate('/home'); // Redirect to Home.js
+        navigate('/home');
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
         const user = userCredential.user;
-  
+
         // Storing user details in Firestore
-        await setDoc(doc(db, 'users', user.uid), {  // Correct usage of db
+        await setDoc(doc(db, 'users', user.uid), {
           username: formData.username,
           email: formData.email,
           createdAt: new Date()
         });
-  
+
         setMessage('Account created successfully!');
-        navigate('/home'); // Redirect to Home.js
+        navigate('/home');
       }
     } catch (error) {
       setMessage(error.message);
-    }  
+    }
   };
 
   return (

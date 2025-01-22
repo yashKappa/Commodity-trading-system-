@@ -1,28 +1,42 @@
-import React, { useState } from 'react';
-import { auth } from './firebase'; // Ensure correct import for Firebase
+import React, { useState, useEffect } from 'react';
+import { auth } from './firebase';
 import { useNavigate } from 'react-router-dom';
-import Form from './Form'; // Import the Form component
-import './home.css'; // Add your CSS file for styling
+import Form from './Form'; 
+import Selling from './Selling';
+import LocalData from './LocalData';
+import './home.css'; 
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeComponent, setActiveComponent] = useState(null); // Track the active component
+  const [activeComponent, setActiveComponent] = useState(null); 
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    const savedComponent = localStorage.getItem('activeComponent');
+    if (savedComponent) {
+      setActiveComponent(savedComponent);
+    } else {
+      setActiveComponent('home'); 
+    }
+  }, []);
+
+  
+  useEffect(() => {
+    if (activeComponent) {
+      localStorage.setItem('activeComponent', activeComponent);
+    }
+  }, [activeComponent]);
 
   const handleLogout = async () => {
     try {
-      await auth.signOut();
-      navigate('/'); // Redirect to login page
+      await auth.signOut(); 
+      localStorage.clear(); 
+      navigate('/'); 
     } catch (error) {
       console.error('Logout failed', error);
     }
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  // Function to handle setting the active component
   const showComponent = (component) => {
     setActiveComponent(component);
   };
@@ -41,7 +55,7 @@ const Navbar = () => {
           <li>
             <button
               onClick={() => showComponent('home')}
-              className="navbar-link"
+              className={`navbar-link ${activeComponent === 'home' ? 'active' : ''}`}
             >
               Home
             </button>
@@ -49,7 +63,7 @@ const Navbar = () => {
           <li>
             <button
               onClick={() => showComponent('form')}
-              className="navbar-link"
+              className={`navbar-link ${activeComponent === 'form' ? 'active' : ''}`}
             >
               Form
             </button>
@@ -57,7 +71,7 @@ const Navbar = () => {
           <li>
             <button
               onClick={() => showComponent('selling')}
-              className="navbar-link"
+              className={`navbar-link ${activeComponent === 'selling' ? 'active' : ''}`}
             >
               Selling Product
             </button>
@@ -65,7 +79,7 @@ const Navbar = () => {
           <li>
             <button
               onClick={() => showComponent('buying')}
-              className="navbar-link"
+              className={`navbar-link ${activeComponent === 'buying' ? 'active' : ''}`}
             >
               Buying Product
             </button>
@@ -80,35 +94,35 @@ const Navbar = () => {
 
       {/* Content Division */}
       <div className="Content">
-        {activeComponent === 'form' && <Form />} {/* Show Form Component */}
-        {activeComponent === 'home' && <h2>Welcome to Home Page</h2>} {/* Example Home */}
-        {activeComponent === 'selling' && <h2>Selling Product Page</h2>} {/* Example Selling */}
-        {activeComponent === 'buying' && <h2>Buying Product Page</h2>} {/* Example Buying */}
+        {activeComponent === 'form' && <Form />}
+        {activeComponent === 'home' && <LocalData />}
+        {activeComponent === 'selling' && <Selling />}
+        {activeComponent === 'buying' && <h2>Buying Product Page</h2>}
       </div>
 
       {/* Bottom Navbar for Mobile */}
       <nav className="bottom-navbar">
         <button
           onClick={() => showComponent('home')}
-          className="bottom-navbar-link"
+          className={`bottom-navbar-link ${activeComponent === 'home' ? 'active' : ''}`}
         >
           Home
         </button>
         <button
           onClick={() => showComponent('form')}
-          className="bottom-navbar-link"
+          className={`bottom-navbar-link ${activeComponent === 'form' ? 'active' : ''}`}
         >
           Form
         </button>
         <button
           onClick={() => showComponent('selling')}
-          className="bottom-navbar-link"
+          className={`bottom-navbar-link ${activeComponent === 'selling' ? 'active' : ''}`}
         >
           Selling
         </button>
         <button
           onClick={() => showComponent('buying')}
-          className="bottom-navbar-link"
+          className={`bottom-navbar-link ${activeComponent === 'buying' ? 'active' : ''}`}
         >
           Buying
         </button>

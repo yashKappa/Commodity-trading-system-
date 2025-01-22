@@ -45,14 +45,13 @@ button.submit-btn {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: 100%; /* Make the button span the width of the form */
+    width: 100%; 
 }
 
 button.submit-btn:hover {
     background-color: #555;
 }
 
-/* Media Query for Mobile Screens */
 @media screen and (max-width: 768px) {
     .form-container {
         padding: 1.5rem;
@@ -72,7 +71,6 @@ button.submit-btn:hover {
     }
 }
 
-/* Media Query for Very Small Screens (Phones) */
 @media screen and (max-width: 480px) {
     .contain{
         height: 80vh;
