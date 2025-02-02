@@ -7,7 +7,7 @@ import Home from './components/Home';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-   <BrowserRouter basename='Commodity-trading-system-'>
+   <BrowserRouter basename='/Commodity-trading-system-'>
   <Routes>
     <Route path="/" element={<App />} />
     <Route path="home" element={<Home />} />
