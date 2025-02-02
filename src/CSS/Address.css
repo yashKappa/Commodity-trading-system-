@@ -1,0 +1,219 @@
+
+.address-form {
+    border: 1px solid rgba(128, 128, 128, 0.733);
+    border-radius: 0.5rem;
+    padding: 20px;
+    width: 40%;
+    margin: auto; /* Center the form */
+    background-color: #ffffff; /* White background for better contrast */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    z-index: 1;
+    font-family: Arial, sans-serif;
+    position: relative;
+}
+
+.address-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333; /* Darker color for readability */
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.address-form .form-group {
+    display: flex;
+    flex-wrap: wrap; /* Adjust for responsive behavior */
+    gap: 1rem; /* Space between inputs */
+    margin-bottom: 20px;
+}
+
+.address-form label {
+    flex: 1; /* Allow labels and inputs to adapt */
+    margin-bottom: 5px;
+    display: block;
+    font-weight: 500; /* Slightly bold for visibility */
+}
+
+.address-form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.address-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.address-form button:hover {
+    background-color: #555;
+}
+
+/* Address List Styles */
+.add-container {
+    position: absolute;
+    width: 100%;
+    height: 90%;
+    display: flex;
+    justify-content: flex-end;
+ }
+
+.address-list {
+    margin: 20px;
+    padding: 20px 20px 5px 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    width: 23%;
+    height: fit-content;
+}
+
+.address-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.address-list li {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.address-list p {
+    margin: 5px 0;
+    color: #555;
+    font-size: 16px;
+}
+
+.address-list p:first-child {
+    font-weight: bold;
+    color: #222;
+}
+
+.edit {
+    background-color: #333;
+    border: 1px solid black;
+    border-radius: 0.3rem;
+    padding: 5px 10px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.edit:hover {
+    background-color: #444;
+}
+
+.Delete {
+    cursor: pointer;
+    background-color: rgb(255, 39, 39);
+    border: 1px solid black;
+    border-radius: 0.3rem;
+    padding: 5px 10px;
+    margin-left: 15px;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.Delete:hover {
+    background-color: rgb(200, 30, 30);
+}
+
+/* Responsive Styles */
+@media screen and (min-width: 768px) {
+    .address-form .form-group {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .address-form label {
+        width: calc(50% - 0.5rem); /* Half the width of the container minus spacing */
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .address-form {
+        padding: 15px;
+        width: 90%;
+        margin: 20px auto;
+        overflow-y: auto;
+        z-index: 1;
+    }
+
+    .address-form .form-group {
+        display: block; /* Stack inputs on smaller screens */
+    }
+
+    .add-container {
+        width: 100%;
+        margin-top: 65rem;
+    }
+
+    .contain {
+        height: 100%;
+        overflow-y: auto; /* Enables vertical scrolling */
+    }
+
+    .address-list {
+        width: 90%;
+        margin: auto;
+    }
+
+    .profile{
+        position: fixed;
+    }
+
+}
+
+/******** Profile CSS **************/
+
+.Profile{
+    border: 1px solid rgba(128, 128, 128, 0.733);
+    border-radius: 0.5rem;
+    padding: 20px;
+    width: 40%;
+    margin: auto; /* Center the form */
+    background-color: #ffffff; /* White background for better contrast */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    z-index: 1;
+    font-family: Arial, sans-serif;
+    position: relative;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.Profile ul{
+    list-style: none;
+}
+
+.Profile img{
+    border-radius: 10rem;
+}
+
+.image-container{
+    display: flex;
+}
+
+.profile-data{
+    padding:10px;
+}
+
+.profile-data li{
+    padding-top: 5px;
+}

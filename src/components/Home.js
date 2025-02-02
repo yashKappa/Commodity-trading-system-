@@ -4,12 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import Form from './Form'; 
 import Selling from './Selling';
 import LocalData from './LocalData';
-import './home.css'; 
+import Address from './Address';
+import Order from './Order';
+import '../CSS/home.css'; 
 
 const Navbar = () => {
   const [activeComponent, setActiveComponent] = useState(null); 
+  const [,setProducts] = useState([]); 
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const savedComponent = localStorage.getItem('activeComponent');
@@ -20,7 +22,6 @@ const Navbar = () => {
     }
   }, []);
 
-  
   useEffect(() => {
     if (activeComponent) {
       localStorage.setItem('activeComponent', activeComponent);
@@ -40,6 +41,28 @@ const Navbar = () => {
   const showComponent = (component) => {
     setActiveComponent(component);
   };
+
+  const fetchProducts = async () => {
+    try {
+      const authData = JSON.parse(localStorage.getItem('authLocal')); // Make sure this key is correct
+      if (authData && authData.uid) {
+        const response = await fetch(`/api/products?uid=${authData.uid}`);
+        if (response.ok) {
+          const result = await response.json();
+          setProducts(result.products);
+        } else {
+          console.error('Failed to fetch products:', response.statusText);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+  
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   return (
     <div>
@@ -81,7 +104,15 @@ const Navbar = () => {
               onClick={() => showComponent('buying')}
               className={`navbar-link ${activeComponent === 'buying' ? 'active' : ''}`}
             >
-              Buying Product
+              Order
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => showComponent('Address')}
+              className={`navbar-link ${activeComponent === 'Address' ? 'active' : ''}`}
+            >
+             Profile  
             </button>
           </li>
         </ul>
@@ -97,7 +128,8 @@ const Navbar = () => {
         {activeComponent === 'form' && <Form />}
         {activeComponent === 'home' && <LocalData />}
         {activeComponent === 'selling' && <Selling />}
-        {activeComponent === 'buying' && <h2>Buying Product Page</h2>}
+        {activeComponent === 'buying' && <Order />}
+        {activeComponent === 'Address' && <Address />}
       </div>
 
       {/* Bottom Navbar for Mobile */}
@@ -125,6 +157,12 @@ const Navbar = () => {
           className={`bottom-navbar-link ${activeComponent === 'buying' ? 'active' : ''}`}
         >
           Buying
+        </button>
+        <button
+          onClick={() => showComponent('Address')}
+          className={`bottom-navbar-link ${activeComponent === 'Address' ? 'active' : ''}`}
+        >
+          Profile
         </button>
       </nav>
     </div>

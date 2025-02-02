@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { db } from './firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import './selling.css';
+import { collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore'; // Import deleteDoc
+import '../CSS/selling.css';
 
 const Selling = () => {
   const [products, setProducts] = useState([]);
@@ -11,6 +11,9 @@ const Selling = () => {
   const [priceFilter, setPriceFilter] = useState('all');
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState('');
+  const [editProduct, setEditProduct] = useState(null);
+  const [newQuantity, setNewQuantity] = useState(1);
+
 
   useEffect(() => {
     const fetchUserProducts = async () => {
@@ -65,6 +68,60 @@ const Selling = () => {
     setFilteredProducts(filtered);
   }, [searchTerm, products, priceFilter]);
 
+  const handleDelete = async (productId) => {
+    try {
+      setLoading(true); // Show loading while deleting
+
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      const userId = currentUser.uid;
+
+      // Delete product from the 'users' collection
+      const userProductDocRef = doc(db, `users/${userId}/products`, productId);
+      await deleteDoc(userProductDocRef);
+
+      // Delete product from the 'local' database
+      const localProductDocRef = doc(db, 'local/', productId); // Adjust the path if it's different
+      await deleteDoc(localProductDocRef);
+
+      // Update local state
+      const updatedProducts = products.filter(product => product.id !== productId);
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+    } catch (error) {
+      setError('Error deleting product: ' + error.message);
+    } finally {
+      setLoading(false); // End loading state
+    }
+  };
+
+  const handleUpdateQuantity = async () => {
+    if (!editProduct) return;
+    try {
+      setLoading(true);
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      const userId = currentUser.uid;
+
+      const userProductDocRef = doc(db, `users/${userId}/products`, editProduct.id);
+      await updateDoc(userProductDocRef, { quantity: newQuantity });
+
+      const localProductDocRef = doc(db, 'local/', editProduct.id);
+      await updateDoc(localProductDocRef, { quantity: newQuantity });
+
+      const updatedProducts = products.map(product =>
+        product.id === editProduct.id ? { ...product, quantity: newQuantity } : product
+      );
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+      setEditProduct(null);
+    } catch (error) {
+      setError('Error updating quantity: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="selling-container">
       <h2>Your Products</h2>
@@ -110,7 +167,11 @@ const Selling = () => {
 
       {loading ? ( // Show loading spinner below the price filter section
         <div className="loading-container">
-          <p>Loading products...</p>
+          <p className="msg">
+            <img src='loading.gif' alt='loading' />
+            <div>
+              Loading products...
+            </div></p>
         </div>
       ) : (
         <div className="products-list">
@@ -128,6 +189,33 @@ const Selling = () => {
                 <p>Price: ₹{product.price}</p>
                 <p>Quantity: {product.quantity}</p>
                 <p>Added On: {new Date(product.createdAt.seconds * 1000).toDateString()}</p>
+                <button
+                  className="delete-button"
+                  onClick={() => handleDelete(product.id)}
+                >
+                  Delete
+                </button>
+                <button className="edit-button" onClick={() => {
+                  setEditProduct(product);
+                  setNewQuantity(product.quantity);
+                }}>
+                  Edit
+                </button>
+                {editProduct && (
+                  <div className="popup-overlay">
+                    <div className="popup">
+                      <h3>Edit Quantity for {editProduct.productName}</h3>
+                      <input
+                        type="number"
+                        min="1"
+                        value={newQuantity}
+                        onChange={(e) => setNewQuantity(parseInt(e.target.value))}
+                      />
+                      <button className="save-button" onClick={handleUpdateQuantity}>Save</button>
+                      <button className="cancel" onClick={() => setEditProduct(null)}>Cancel</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

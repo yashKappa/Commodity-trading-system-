@@ -1,8 +1,6 @@
 .local-data-container {
     padding: 20px;
-    background-color: #f9f9f9;
-    min-height: 100vh;
-    margin-bottom: 4rem;
+    font-family: Arial, sans-serif;
   }
   
   .local-data-container h2 {
@@ -41,9 +39,9 @@
   }
   
   .grid-item p {
-    margin: 5px 0;
     color: #555;
-    font-size: 14px;
+    font-size: 15px;
+    margin: 5px;
   }
 
   .search-input {
@@ -102,10 +100,18 @@
     text-align: center;
     position: absolute;
   }
+
+  .msg img{
+    width: 5%;
+  }
   
   @media (max-width: 1024px) {
     .grid-container {
       grid-template-columns: repeat(4, 1fr); 
+    }
+
+    .msg img{
+      width: 10%;
     }
   }
   

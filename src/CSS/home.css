@@ -5,6 +5,10 @@
     padding: 0.5rem 1rem;
     background-color: #333;
     color: white;
+    z-index: 999;
+    position: relative;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
 }
 
 .navbar-logo img {
@@ -39,8 +43,6 @@
   border-radius: 4px;
   font-weight: bold;
 }
-
-
 
 .menu-toggle {
     display: none;
@@ -88,14 +90,14 @@
 }
 
 .navbar-logout .navbar-link{
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(250, 39, 39);
     border-radius: 0.3rem;
-    color: #000000;
+    color: #ffffff;
     font-weight: bold;
 }
 
 .navbar-logout .navbar-link:hover{
-    background-color: rgb(247, 50, 50);
+    background-color: rgb(216, 2, 2);
     color: white;
 }
 
@@ -143,8 +145,8 @@
     position: fixed;
     bottom: 0;
     width: 100%;
-    gap: 1rem;
     display: none;
+    z-index: 999;
 }
 
 .bottom-navbar-link {
@@ -162,3 +164,4 @@
         display: flex;
     }
 }
+

@@ -1,0 +1,122 @@
+.selling-container {
+    padding: 20px;
+    margin-bottom: 4rem;
+    justify-content: center;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .products-list {
+    display: grid;
+    gap: 20px; 
+    grid-template-columns: repeat(6, 1fr); 
+    justify-content: center;
+    text-align: center;
+  }
+
+  .products-list .msg{
+    width: 98%;
+    text-align: center;
+    position: absolute;
+  }
+  
+  .product-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    overflow: hidden;
+  }
+  
+  .product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
+  
+  .product-card h3 {
+    margin: 10px 0;
+    font-size: 1.2rem;
+  }
+  
+  .product-card p {
+    margin: 5px 0;
+    color: #555;
+  }
+
+  .products-list .delete-button, .cancel{
+    background-color: red;
+    color: white;
+    padding: 5px 10px;  
+    margin: 10px;
+    padding: 5px 10px;
+    border-radius: 0.2rem;
+    border: none;
+    cursor: pointer;
+  }
+
+  .delete-button:hover{
+    background-color: rgb(179, 3, 3);
+  }
+  
+  @media (max-width: 1024px) {
+    .products-list {
+      grid-template-columns: repeat(4, 1fr); 
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .products-list {
+      grid-template-columns: repeat(2, 1fr); 
+    }
+  }
+
+
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    animation: fadeIn 0.3s ease-out;
+    overflow-y: hidden;
+  }
+
+  .popup{
+    background-color: #fff;
+    padding: 10px 0px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .products-list .save-button, .edit-button{
+    background-color: rgb(29, 81, 250);
+    color: white;
+    padding: 5px 10px;  
+    margin: 10px;
+    padding: 5px 10px;
+    border-radius: 0.2rem;
+    border: none;
+    cursor: pointer;
+  }
+
+  .popup input {
+    width: 80%;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }

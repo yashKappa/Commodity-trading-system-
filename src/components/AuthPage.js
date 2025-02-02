@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from './firebase'; 
-import { getAuth } from 'firebase/auth';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import './AuthPage.css';
+import { db } from './firebase'; // Ensure db is imported
+import '../CSS/AuthPage.css';
 
 const AuthPage = () => {
-  const auth = getAuth(); 
+  const auth = getAuth(); // Get Auth instance
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
@@ -19,15 +23,17 @@ const AuthPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    // Check if user is already authenticated
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setMessage('Welcome back!');
-        navigate('/home');
+        // Store user details in local storage
+        localStorage.setItem('authUser', JSON.stringify(user));
+        navigate('/home'); // Redirect to home if authenticated
       }
     });
 
-    return () => unsubscribe(); 
-  }, []);
+    return () => unsubscribe(); // Cleanup the listener on component unmount
+  }, [auth, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -39,21 +45,37 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, formData.email, formData.password);
-        setMessage('Logged in successfully!');
+        // Login logic
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password
+        );
+        const user = userCredential.user;
+        localStorage.setItem('authUser', JSON.stringify(user)); // Store user in local storage
         navigate('/home');
       } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        // Sign-up logic
+        if (formData.password !== formData.confirmPassword) {
+          setMessage('Passwords do not match');
+          return;
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password
+        );
         const user = userCredential.user;
 
-        // Storing user details in Firestore
+        // Store user details in Firestore
         await setDoc(doc(db, 'users', user.uid), {
           username: formData.username,
           email: formData.email,
-          createdAt: new Date()
+          createdAt: new Date(),
         });
 
-        setMessage('Account created successfully!');
+        localStorage.setItem('authUser', JSON.stringify(user)); // Store user in local storage
         navigate('/home');
       }
     } catch (error) {
@@ -64,7 +86,10 @@ const AuthPage = () => {
   return (
     <div className="auth-container">
       <div className="logo">
-        <img src="https://cts-tex.com/wp-content/uploads/2022/12/Comhome-Logo-e1677767236209.png" alt="logo" />
+        <img
+          src="https://cts-tex.com/wp-content/uploads/2022/12/Comhome-Logo-e1677767236209.png"
+          alt="logo"
+        />
       </div>
       <div className="auth-form-container">
         <div className="form">
