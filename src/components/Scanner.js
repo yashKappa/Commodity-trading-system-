@@ -8,6 +8,7 @@ const Scanner = () => {
   const [generatedOtp, setGeneratedOtp] = useState(null);
   const [message, setMessage] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [scanned, setScanned] = useState(false);
   const scannerRef = useRef(null);
 
   useEffect(() => {
@@ -25,7 +26,8 @@ const Scanner = () => {
             return;
           }
           setEmail(parsedData.buyerEmail);
-          sendOtp(parsedData.buyerEmail);
+          setScanned(true); // Show email and "Send OTP" button
+          setMessage("");
         } catch (error) {
           console.error("Invalid QR Code Data:", error);
           setMessage("Failed to read QR code.");
@@ -39,7 +41,9 @@ const Scanner = () => {
     };
   }, []);
 
-  const sendOtp = (recipientEmail) => {
+  const sendOtp = () => {
+    if (!email) return;
+
     setOtpSent(true);
     setMessage("Sending OTP...");
 
@@ -47,14 +51,14 @@ const Scanner = () => {
     setGeneratedOtp(otpCode);
 
     const emailParams = {
-      to_email: recipientEmail,
+      to_email: email,
       otp_code: otpCode,
     };
 
     emailjs
       .send("service_bjfvyin", "template_3tpys9h", emailParams, "gkrWAPa8psVVZhdbT")
       .then(() => {
-        setMessage(`OTP sent to ${recipientEmail}`);
+        setMessage(`OTP sent to ${email}`);
       })
       .catch((error) => {
         console.error("EmailJS Error:", error);
@@ -79,25 +83,26 @@ const Scanner = () => {
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>QR'S Code Scanner & OTP Verification</h2>
+      <h2>QR Code Scanner & OTP Verification</h2>
       <div id="reader"></div>
 
-      {email && (
+      {scanned && (
         <div>
           <h3>Email: {email}</h3>
-        </div>
-      )}
-
-      {otpSent && (
-        <div>
-          <h3>Enter OTP</h3>
-          <input
-            type="text"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Enter OTP"
-          />
-          <button onClick={verifyOtp}>Verify OTP</button>
+          {!otpSent ? (
+            <button onClick={sendOtp}>Send OTP</button>
+          ) : (
+            <div>
+              <h3>Enter OTP</h3>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="Enter OTP"
+              />
+              <button onClick={verifyOtp}>Verify OTP</button>
+            </div>
+          )}
         </div>
       )}
 
