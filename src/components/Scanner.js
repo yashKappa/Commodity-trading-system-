@@ -55,17 +55,23 @@ const Scanner = () => {
 
     const emailParams = {
       to_email: email,
-      otp_code: otpCode,
+      otp_code: otpCode.toString(),
     };
 
     emailjs
-      .send("service_bjfvyin", "template_3tpys9h", emailParams, "gkrWAPa8psVVZhdbT")
-      .then(() => {
+      .send(
+        "service_bjfvyin", // ✅ Your EmailJS Service ID
+        "__ejs-test-mail-service__", // ✅ Replace with the correct EmailJS Template ID
+        emailParams,
+        "gkrWAPa8psVVZhdbT" // ✅ Your EmailJS Public Key
+      )
+      .then((response) => {
+        console.log("Email sent successfully:", response);
         setMessage(`OTP sent to ${email}`);
       })
       .catch((error) => {
         console.error("EmailJS Error:", error);
-        setMessage("Error sending OTP.");
+        setMessage("Error sending OTP. Check console for details.");
         setOtpSent(false);
       });
   };
