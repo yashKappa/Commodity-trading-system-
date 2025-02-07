@@ -155,7 +155,8 @@ const ProductDetails = ({ productId }) => {
             sellerId,
             buyerId: userId,
             buyerContact: selectedAddress.Contact, // ✅ Add buyer's contact number
-            buyerName: selectedAddress.Email,
+            buyerName: selectedAddress.Usernname,
+            Email: selectedAddress.Email,
             productName: product.productName,
             price: product.price,
           });
