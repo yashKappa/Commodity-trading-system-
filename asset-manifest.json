@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/Commodity-trading-system-/static/css/main.01351927.css",
-    "main.js": "/Commodity-trading-system-/static/js/main.b37a15a1.js",
+    "main.js": "/Commodity-trading-system-/static/js/main.4e440738.js",
     "index.html": "/Commodity-trading-system-/index.html",
     "main.01351927.css.map": "/Commodity-trading-system-/static/css/main.01351927.css.map",
-    "main.b37a15a1.js.map": "/Commodity-trading-system-/static/js/main.b37a15a1.js.map"
+    "main.4e440738.js.map": "/Commodity-trading-system-/static/js/main.4e440738.js.map"
   },
   "entrypoints": [
     "static/css/main.01351927.css",
-    "static/js/main.b37a15a1.js"
+    "static/js/main.4e440738.js"
   ]
 }
