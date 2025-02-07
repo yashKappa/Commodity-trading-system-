@@ -7,6 +7,7 @@ const Scanner = () => {
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState(null);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState(""); // ✅ New state to store errors
   const [otpSent, setOtpSent] = useState(false);
   const scannerRef = useRef(null);
 
@@ -22,18 +23,21 @@ const Scanner = () => {
           const parsedData = JSON.parse(decodedText);
           
           if (!parsedData.Email || !/\S+@\S+\.\S+/.test(parsedData.Email)) {
-            setMessage("Invalid email in QR code.");
-            return;
+            throw new Error("Invalid email in QR code.");
           }
 
           setEmail(parsedData.Email);
-          setMessage("Email detected! Click 'Send OTP' to verify.");
+          setMessage("✅ Email detected! Click 'Send OTP' to verify.");
+          setError(""); // Clear previous errors
         } catch (error) {
           console.error("Invalid QR Code Data:", error);
-          setMessage("Failed to read QR code.");
+          setError("⚠️ Error: Failed to read QR code.");
         }
       },
-      (errorMessage) => console.log("Scan Error:", errorMessage)
+      (errorMessage) => {
+        console.log("Scan Error:", errorMessage);
+        setError(`⚠️ Scanner Error: ${errorMessage}`);
+      }
     );
 
     return () => {
@@ -43,12 +47,12 @@ const Scanner = () => {
 
   const sendOtp = () => {
     if (!email) {
-      setMessage("No valid email found.");
+      setError("⚠️ Error: No valid email found.");
       return;
     }
 
     setOtpSent(true);
-    setMessage("Sending OTP...");
+    setMessage("📩 Sending OTP...");
 
     const otpCode = Math.floor(100000 + Math.random() * 900000);
     setGeneratedOtp(otpCode);
@@ -61,32 +65,34 @@ const Scanner = () => {
     emailjs
       .send(
         "service_bjfvyin", // ✅ Your EmailJS Service ID
-        "__ejs-test-mail-service__", // ✅ Replace with the correct EmailJS Template ID
+        "__ejs-test-mail-service__", // ✅ Your EmailJS Template ID
         emailParams,
         "gkrWAPa8psVVZhdbT" // ✅ Your EmailJS Public Key
       )
       .then((response) => {
         console.log("Email sent successfully:", response);
-        setMessage(`OTP sent to ${email}`);
+        setMessage(`✅ OTP sent to ${email}`);
+        setError(""); // Clear previous errors
       })
       .catch((error) => {
         console.error("EmailJS Error:", error);
-        setMessage("Error sending OTP. Check console for details.");
+        setError("⚠️ Error sending OTP. Check console for details.");
         setOtpSent(false);
       });
   };
 
   const verifyOtp = () => {
     if (!otp.trim() || otp.length !== 6) {
-      setMessage("Enter a valid 6-digit OTP.");
+      setError("⚠️ Error: Enter a valid 6-digit OTP.");
       return;
     }
 
     if (parseInt(otp) === generatedOtp) {
       setMessage("✅ OTP Verified! Email authenticated.");
       setGeneratedOtp(null);
+      setError(""); // Clear errors after success
     } else {
-      setMessage("❌ Incorrect OTP. Try again.");
+      setError("❌ Incorrect OTP. Try again.");
     }
   };
 
@@ -99,7 +105,7 @@ const Scanner = () => {
         <div>
           <h3>Email: {email}</h3>
           <button onClick={sendOtp} disabled={otpSent}>
-            {otpSent ? "OTP Sent" : "Send OTP"}
+            {otpSent ? "✅ OTP Sent" : "📩 Send OTP"}
           </button>
         </div>
       )}
@@ -113,11 +119,12 @@ const Scanner = () => {
             onChange={(e) => setOtp(e.target.value)}
             placeholder="Enter OTP"
           />
-          <button onClick={verifyOtp}>Verify OTP</button>
+          <button onClick={verifyOtp}>✔ Verify OTP</button>
         </div>
       )}
 
-      {message && <p>{message}</p>}
+      {message && <p style={{ color: "green" }}>{message}</p>}
+      {error && <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>} {/* ✅ Show Errors in Red */}
     </div>
   );
 };
