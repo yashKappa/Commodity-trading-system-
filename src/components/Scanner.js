@@ -23,6 +23,7 @@ const Scanner = () => {
     scannerRef.current = new Html5QrcodeScanner("reader", {
       fps: 10,
       qrbox: { width: 250, height: 250 },
+      supportedScanTypes: [Html5QrcodeScanner.SCAN_TYPE_CAMERA],
     });
 
     scannerRef.current.render(
@@ -60,7 +61,7 @@ const Scanner = () => {
     };
 
     emailjs
-      .send("service_bjfvyin", "template_3tpys9h", emailParams, "gkrWAPa8psVVZhdbT")
+      .send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams, "YOUR_PUBLIC_KEY")
       .then(() => {
         setMessage(`OTP sent to ${buyerEmail}`);
       })
@@ -87,8 +88,9 @@ const Scanner = () => {
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <h2>QR Code Scanner & OTP Verification</h2>
-      {!isScanning && <button onClick={startScanner}>Start Scan</button>}
+      {!isScanning && !email && <button onClick={startScanner}>Start Scan</button>}
       {isScanning && <div id="reader"></div>}
+
       {email && <h3>OTP sent to: {email}</h3>}
 
       {generatedOtp !== null && (
