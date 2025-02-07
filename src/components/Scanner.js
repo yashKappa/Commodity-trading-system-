@@ -81,7 +81,7 @@ const Scanner = () => {
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>QR Code Scanner & OTP Verification</h2>
+      <h2>QR'S Code Scanner & OTP Verification</h2>
       <div id="reader"></div>
 
       {scannedData && (
