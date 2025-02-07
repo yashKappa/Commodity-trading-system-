@@ -16,22 +16,33 @@ const Scanner = () => {
       fps: 10,
       qrbox: { width: 250, height: 250 },
     });
-
+  
     scannerRef.current.render(
       (decodedText) => {
         try {
-          const parsedData = JSON.parse(decodedText);
-          
-          if (!parsedData.Email || !/\S+@\S+\.\S+/.test(parsedData.Email)) {
-            throw new Error("Invalid email in QR code.");
+          let extractedEmail;
+  
+          // If QR code contains JSON, parse it
+          if (decodedText.startsWith("{") && decodedText.endsWith("}")) {
+            const parsedData = JSON.parse(decodedText);
+            if (!parsedData.Email || !/\S+@\S+\.\S+/.test(parsedData.Email)) {
+              throw new Error("Invalid email in QR code.");
+            }
+            extractedEmail = parsedData.Email;
+          } else {
+            // If QR code is plain text, check if it's a valid email
+            if (!/\S+@\S+\.\S+/.test(decodedText)) {
+              throw new Error("Invalid email format in QR code.");
+            }
+            extractedEmail = decodedText;
           }
-
-          setEmail(parsedData.Email);
+  
+          setEmail(extractedEmail);
           setMessage("✅ Email detected! Click 'Send OTP' to verify.");
           setError(""); // Clear previous errors
         } catch (error) {
-          console.error("Invalid QR Code Data:", error);
-          setError("⚠️ Error: Failed to read QR code.");
+          console.error("QR Code Error:", error);
+          setError("⚠️ QR Code Error: " + error.message);
         }
       },
       (errorMessage) => {
@@ -39,11 +50,12 @@ const Scanner = () => {
         setError(`⚠️ Scanner Error: ${errorMessage}`);
       }
     );
-
+  
     return () => {
       scannerRef.current?.clear();
     };
   }, []);
+  
 
   const sendOtp = () => {
     if (!email) {
