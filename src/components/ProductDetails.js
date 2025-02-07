@@ -11,7 +11,7 @@ const Modal = ({ message, onClose }) => {
       <div className="modal">
         <p>{message}</p>
         <div className='btn'>
-        <button onClick={onClose}>Ok</button>
+          <button onClick={onClose}>Ok</button>
         </div>
       </div>
     </div>
@@ -29,9 +29,9 @@ const Modern = ({ message, onClose }) => {
 
         {/* Ok Button */}
         <div className="button-container">
-          <button 
-            onClick={() => { 
-              onClose(); 
+          <button
+            onClick={() => {
+              onClose();
               window.location.reload(); // Reload the page after the message is closed
             }}
           >
@@ -55,6 +55,8 @@ const ProductDetails = ({ productId }) => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
   const [modalMessage, setModalMessage] = useState(''); // State for modal message
   const [modernMessage, setModernMessage] = useState(''); // State for modal message
+  const [isUploading, setIsUploading] = useState(false);
+
 
 
   // Fetch user ID and addresses on authentication state change
@@ -123,8 +125,13 @@ const ProductDetails = ({ productId }) => {
 
   // Handle Confirm Purchase
   const handleConfirmPurchase = async () => {
+    setIsUploading(true);
+    document.body.style.overflow = 'hidden';
+
     if (selectedPaymentMethod) {
       const totalPrice = product.price * selectedQuantity + 30; // Adding delivery charge
+      const orderId = `${product.id}_${Date.now()}`; // Unique Order ID
+
       try {
         // Save purchase data under the buyer's Firestore document
         await setDoc(doc(db, 'users', userId, 'purchasedProducts', product.id), {
@@ -138,10 +145,21 @@ const ProductDetails = ({ productId }) => {
           imageUrl: product.imageUrl, // Make sure the imageUrl is being saved
           date: new Date().toISOString(),
         });
-  
+
         // Check if the product contains the seller's ID
         const sellerId = product.userId; // Ensure `userId` is fetched from product document
         if (sellerId) {
+          // Generate unique QR code content (JSON format)
+          const qrData = JSON.stringify({
+            orderId,
+            sellerId,
+            buyerId: userId,
+            buyerContact: selectedAddress.Contact, // ✅ Add buyer's contact number
+            buyerName: selectedAddress.Email,
+            productName: product.productName,
+            price: product.price,
+          });
+
           // Save purchase data under the seller's Firestore document
           await setDoc(doc(db, 'users', sellerId, 'soldProducts', product.id), {
             productId: product.id,
@@ -154,21 +172,22 @@ const ProductDetails = ({ productId }) => {
             address: selectedAddress,
             paymentMethod: selectedPaymentMethod,
             imageUrl: product.imageUrl, // Make sure the imageUrl is being saved
+            qrCode: qrData,  // ✅ Store QR Code **only** in the seller's account
             date: new Date().toISOString(),
           });
-  
+
           // Update the product's stock in the global `local` collection
           const productRef = doc(db, `local/${productId}`);
           await updateDoc(productRef, {
             quantity: product.quantity - selectedQuantity,
           });
-  
+
           // Update the product's stock in the seller's collection
           const sellerProductRef = doc(db, `users/${sellerId}/products/${productId}`);
           await updateDoc(sellerProductRef, {
             quantity: product.quantity - selectedQuantity,
           });
-  
+
           // If the user is a seller, also deduct the quantity from their own product stock
           if (userId === sellerId) {
             const userProductRef = doc(db, `users/${userId}/products/${productId}`);
@@ -179,7 +198,7 @@ const ProductDetails = ({ productId }) => {
         } else {
           setModalMessage('Product does not contain a seller ID.');
         }
-  
+
         // Set a success message and trigger page reload after purchase
         setModernMessage(`Purchase confirmed! Total Price: ₹${totalPrice}`);
         setShowPaymentOptions(false);
@@ -192,8 +211,9 @@ const ProductDetails = ({ productId }) => {
     } else {
       setModalMessage('Please select a payment method before proceeding.');
     }
-  };
-  
+};
+
+
 
   // Handle payment cancelation
   const handleCancel = () => {
@@ -203,69 +223,69 @@ const ProductDetails = ({ productId }) => {
 
   if (loading) {
     return <p className="msg">
-    <img src='loading.gif' alt='loading'/>
-    <div>
-    Loading products details ...
-    </div></p>;
+      <img src='loading.gif' alt='loading' />
+      <div>
+        Loading products details ...
+      </div></p>;
   }
 
   if (!product) {
     return <p className="msg">
-    <img src='loading.gif' alt='loading'/>
-    <div>
-    Loading products details ...
-    </div></p>;
+      <img src='loading.gif' alt='loading' />
+      <div>
+        Loading products details ...
+      </div></p>;
   }
 
   const totalPrice = (product?.price * selectedQuantity) + 30; // Adding delivery charge of 30
 
   return (
-<div className="product-details">
+    <div className="product-details">
       <img src={product.imageUrl} alt={product.productName} />
       <div className="details">
         <div>
-        <h3>{product.productName}</h3>
-        <p><strong>Price:</strong> ₹{product.price}</p>
-        <p><strong>Available Quantity:</strong> {product.quantity}</p>
-        <p><strong>Description:</strong>{product.des}</p>
-        <div>
-        {product.quantity === 0 || product.quantity === null ? (
-        <h2 className="out-of-stock">Out of Stock</h2>
-      ) : (
-        <div>
-           <label htmlFor="quantity">Select Quantity:</label>
-        <select
-          id="quantity"
-          className="quantity-selector"
-          value={selectedQuantity}
-          onChange={(e) => setSelectedQuantity(parseInt(e.target.value))}
-        >
-          {Array.from({ length: product.quantity }, (_, i) => (
-            <option key={i + 1} value={i + 1}>
-              {i + 1}
-            </option>
-          ))}
-        </select>
-        <button onClick={handleBuyClick} className="buy-button">
-          Buy Product
-        </button>
-        </div>
-      )}
-        </div>
+          <h3>{product.productName}</h3>
+          <p><strong>Price:</strong> ₹{product.price}</p>
+          <p><strong>Available Quantity:</strong> {product.quantity}</p>
+          <p><strong>Description:</strong>{product.des}</p>
+          <div>
+            {product.quantity === 0 || product.quantity === null ? (
+              <h2 className="out-of-stock">Out of Stock</h2>
+            ) : (
+              <div>
+                <label htmlFor="quantity">Select Quantity:</label>
+                <select
+                  id="quantity"
+                  className="quantity-selector"
+                  value={selectedQuantity}
+                  onChange={(e) => setSelectedQuantity(parseInt(e.target.value))}
+                >
+                  {Array.from({ length: product.quantity }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={handleBuyClick} className="buy-button">
+                  Buy Product
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         {showPaymentOptions && (
           <div className="payment-options">
             <div>
               <h2>Product Details</h2>
-            <p className="total-price">
-              <p className='strong'>Single Price<span>₹{product.price} </span></p>
-              <p className='strong'>Product Price<span>₹{product.price * selectedQuantity}</span></p> 
-              <p className='strong'>Delivery Charge<span>₹30</span></p>
-              <p className='strong'>Total Price<span>₹{totalPrice} </span></p> 
-            </p>
+              <p className="total-price">
+                <p className='strong'>Single Price<span>₹{product.price} </span></p>
+                <p className='strong'>Product Price<span>₹{product.price * selectedQuantity}</span></p>
+                <p className='strong'>Delivery Charge<span>₹30</span></p>
+                <p className='strong'>Total Price<span>₹{totalPrice} </span></p>
+              </p>
             </div>
             <div className="payment-methods">
-            <h2>Choose Payment Method</h2>
+              <h2>Choose Payment Method</h2>
               <label>
                 PhonePe
                 <input
@@ -277,7 +297,7 @@ const ProductDetails = ({ productId }) => {
                 />
               </label>
               <label>
-              GPay
+                GPay
                 <input
                   type="radio"
                   name="payment-method"
@@ -287,7 +307,7 @@ const ProductDetails = ({ productId }) => {
                 />
               </label>
               <label>
-              UPI Pay
+                UPI Pay
                 <input
                   type="radio"
                   name="payment-method"
@@ -297,7 +317,7 @@ const ProductDetails = ({ productId }) => {
                 />
               </label>
               <label>
-              Cash on Delivery
+                Cash on Delivery
                 <input
                   type="radio"
                   name="payment-method"
@@ -307,13 +327,29 @@ const ProductDetails = ({ productId }) => {
                 />
               </label>
             </div>
+            <div className='load'>
+  {isUploading && (
+    <div className="loading-cp">
+      <div className='load-data'>
+        <img src="https://i.pinimg.com/originals/5a/d0/47/5ad047a18772cf0488a908d98942f9bf.gif" alt="Loading..." className="load-icon" />
+        <div>
+          <p className="cp">Confirming Purchase...</p>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
             <div className="payment-buttons">
-              <button className="confirm-button" onClick={handleConfirmPurchase}>
-                Confirm Purchase
-              </button>
-              <button className="cancel-button" onClick={handleCancel}>
-                Cancel
-              </button>
+              <div className="payment-buttons">
+                <button className="confirm-button" disabled={isUploading} onClick={handleConfirmPurchase}>
+                  Confirm Purchase
+                </button>
+
+                <button className="cancel-button" onClick={handleCancel}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -332,13 +368,13 @@ const ProductDetails = ({ productId }) => {
                     <p>{addr.city} - {addr.zipCode}</p>
                     <p>{addr.state}, {addr.country}</p>
                     <p>Contact: {addr.Contact}</p>
-                  <p className='select'><input
+                    <p className='select'><input
                       type="radio"
                       name="address"
                       value={addr.id}
                       onChange={() => setSelectedAddress(addr)}
                     />Select</p>
-                     </label>
+                  </label>
                 </li>
               ))}
             </ul>
@@ -346,9 +382,9 @@ const ProductDetails = ({ productId }) => {
             <p>No addresses saved yet.</p>
           )}
         </div>
-        </div>
-        {modalMessage && <Modal message={modalMessage} onClose={() => setModalMessage('')} />}
-        {modernMessage && <Modern message={modernMessage} onClose={() => setModernMessage('')} />}
+      </div>
+      {modalMessage && <Modal message={modalMessage} onClose={() => setModalMessage('')} />}
+      {modernMessage && <Modern message={modernMessage} onClose={() => setModernMessage('')} />}
     </div>
   );
 };

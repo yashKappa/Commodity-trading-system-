@@ -6,12 +6,41 @@ import Selling from './Selling';
 import LocalData from './LocalData';
 import Address from './Address';
 import Order from './Order';
+import Scanner from './Scanner';
 import '../CSS/home.css'; 
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./firebase";
+import { getAuth } from "firebase/auth";
+
 
 const Navbar = () => {
   const [activeComponent, setActiveComponent] = useState(null); 
   const [,setProducts] = useState([]); 
   const navigate = useNavigate();
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+  
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) return;
+
+        const userId = currentUser.uid;
+        const docRef = doc(db, `users/${userId}/profilePic/image`);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setUploadedImageUrl(docSnap.data().profilePic);
+        }
+      } catch (error) {
+        console.error("Error fetching profile image:", error.message);
+      }
+    };
+
+    fetchProfileImage();
+  }, []);
 
   useEffect(() => {
     const savedComponent = localStorage.getItem('activeComponent');
@@ -70,7 +99,7 @@ const Navbar = () => {
       <nav className="navbar">
         <div className="navbar-logo">
           <img
-            src="https://cts-tex.com/wp-content/uploads/2022/12/Comhome-Logo-e1677767236209.png"
+            src="logo.png"
             alt="Logo"
           />
         </div>
@@ -109,6 +138,14 @@ const Navbar = () => {
           </li>
           <li>
             <button
+              onClick={() => showComponent('Scanner')}
+              className={`navbar-link ${activeComponent === 'Scanner' ? 'active' : ''}`}
+            >
+              Scanner
+            </button>
+          </li>
+          <li>
+            <button
               onClick={() => showComponent('Address')}
               className={`navbar-link ${activeComponent === 'Address' ? 'active' : ''}`}
             >
@@ -117,9 +154,14 @@ const Navbar = () => {
           </li>
         </ul>
         <div className="navbar-logout">
-          <button onClick={handleLogout} className="navbar-link">
+          <img
+          src={uploadedImageUrl || "user.png"}
+          alt="Profile"
+          className="profile-image"
+        />
+        <button onClick={handleLogout} className="navbar-link">
             Logout
-          </button>
+          </button> 
         </div>
       </nav>
 
@@ -130,6 +172,7 @@ const Navbar = () => {
         {activeComponent === 'selling' && <Selling />}
         {activeComponent === 'buying' && <Order />}
         {activeComponent === 'Address' && <Address />}
+        {activeComponent === 'Scanner' && <Scanner />}
       </div>
 
       {/* Bottom Navbar for Mobile */}
@@ -157,6 +200,12 @@ const Navbar = () => {
           className={`bottom-navbar-link ${activeComponent === 'buying' ? 'active' : ''}`}
         >
           Buying
+        </button>
+        <button
+          onClick={() => showComponent('Scanner')}
+          className={`bottom-navbar-link ${activeComponent === 'Scanner' ? 'active' : ''}`}
+        >
+          Scanner
         </button>
         <button
           onClick={() => showComponent('Address')}

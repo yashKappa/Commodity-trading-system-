@@ -10,6 +10,7 @@
     z-index: 1;
     font-family: Arial, sans-serif;
     position: relative;
+    margin-bottom: 1rem;
 }
 
 .address-form h2 {
@@ -66,6 +67,7 @@
     height: 90%;
     display: flex;
     justify-content: flex-end;
+    top: 10%;
  }
 
 .address-list {
@@ -106,7 +108,7 @@
     color: #222;
 }
 
-.edit {
+.edit, .change {
     background-color: #333;
     border: 1px solid black;
     border-radius: 0.3rem;
@@ -116,7 +118,7 @@
     transition: background-color 0.3s ease;
 }
 
-.edit:hover {
+.edit:hover,.change:hover {
     background-color: #444;
 }
 
@@ -145,10 +147,14 @@
     .address-form label {
         width: calc(50% - 0.5rem); /* Half the width of the container minus spacing */
     }
+
+    .Profile{
+        background-color:black;
+    }
 }
 
 @media screen and (max-width: 768px) {
-    .address-form {
+    .contain .address-form {
         padding: 15px;
         width: 90%;
         margin: 20px auto;
@@ -158,25 +164,43 @@
 
     .address-form .form-group {
         display: block; /* Stack inputs on smaller screens */
+
     }
 
-    .add-container {
+    .contain .add-container {
         width: 100%;
-        margin-top: 65rem;
+        display: block;
+        top: auto;
+        height: fit-content;
+        padding-bottom: 6rem;
     }
 
     .contain {
-        height: 100%;
-        overflow-y: auto; /* Enables vertical scrolling */
+        display: block;
+        margin-top: 5%;
     }
 
-    .address-list {
+    .contain .address-list {
         width: 90%;
         margin: auto;
     }
 
-    .profile{
-        position: fixed;
+    .contain .Profile{
+        width: 90%;
+        display: block;
+    }
+
+    .contain .image-container{
+        display: block;
+    }
+
+    .contain .image-container .img{
+        width: 40%;
+    }
+    
+    .contain .data{
+        padding-left: 0%;
+        width: 100%;
     }
 
 }
@@ -202,18 +226,54 @@
     list-style: none;
 }
 
-.Profile img{
-    border-radius: 10rem;
+.profile-data li{
+    padding-top: 5px;
+}
+
+.profile-image{
+    width: 100%;
+    border-radius: 5rem;
+    border: 1px solid gray;
 }
 
 .image-container{
     display: flex;
+    width: 100%;
 }
 
-.profile-data{
-    padding:10px;
+.data{
+    width: 60%;
+    position: relative;
+    padding: 20px;
 }
 
-.profile-data li{
-    padding-top: 5px;
+.image-container .img{
+    width: 25%;
+}
+
+.profile-container .select-btn, .profile-submit-btn{
+    background-color: rgb(48, 47, 47);
+    padding: 5px 0px;
+    border-radius: 0.3rem;
+    color: rgb(255, 255, 255);
+    border: 1px solid rgb(0, 0, 0);
+    padding: 5px 25px;
+    cursor: pointer;
+    font-weight: bold;
+} 
+
+.profile-input-group{
+    display: flex;
+    width: 170%;
+    margin-top: 0.5rem;
+}
+
+.Delete-btn{
+    background-color: red;
+    margin-left: 0.5rem;
+    padding: 0px 10px;
+    border-radius: 0.3rem;
+    border: 1px solid black;
+    color: white;
+    cursor: pointer;
 }

@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth"; // Firebase auth
 import { db } from "./firebase"; // Firebase config
 import { collection, doc, setDoc, getDocs, deleteDoc } from "firebase/firestore";
 import Error from "./Error"; // Custom Error component
+import Profile from "./Profile";
 import "../CSS/Address.css"; // Custom CSS
 
 const AddressForm = () => {
@@ -16,7 +17,7 @@ const AddressForm = () => {
     country: "",
     Contact: "",
     Usernname: "",
-    Image: null,
+    Email: "",
   });
   const [userId, setUserId] = useState(null);
   const [userEmail, setUserEmail] = useState(""); // To store user email
@@ -49,13 +50,6 @@ const AddressForm = () => {
     });
   };
 
-  const handleImageChange = (e) => {
-    setAddress({
-      ...address,
-      Image: e.target.files[0],
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -67,53 +61,33 @@ const AddressForm = () => {
     try {
       setLoading(true);
 
-      // If an image is selected, convert it to a base64 string
-      let imageUrl = "";
-      if (address.Image) {
-        const reader = new FileReader();
-        reader.readAsDataURL(address.Image);
+      const addressRef = editingId
+        ? doc(db, `users/${userId}/addresses`, editingId)
+        : doc(collection(db, `users/${userId}/addresses`));
 
-        reader.onload = async () => {
-          imageUrl = reader.result;
+      const addressData = {
+        ...address,
+      };
 
-          const addressRef = editingId
-            ? doc(db, `users/${userId}/addresses`, editingId)
-            : doc(collection(db, `users/${userId}/addresses`));
-
-          const addressData = {
-            ...address,
-            Image: imageUrl, // Store the image URL
-          };
-
-          await setDoc(addressRef, addressData, { merge: true });
-          alert(editingId ? "Address updated successfully." : "Address saved successfully.");
-          
-          // Reset form after submission
-          setAddress({
-            Resident: "",
-            street: "",
-            location: "",
-            city: "",
-            state: "",
-            zipCode: "",
-            country: "",
-            Contact: "",
-            Usernname: "",
-            Image: null,
-          });
-          setEditingId(null);
-          fetchAddresses(userId);
-          setErrorMessage("");
-        };
-
-        reader.onerror = () => {
-          setErrorMessage("Error reading the file.");
-          setLoading(false);
-        };
-      } else {
-        setErrorMessage("Please upload an image.");
-        setLoading(false);
-      }
+      await setDoc(addressRef, addressData, { merge: true });
+      alert(editingId ? "Address updated successfully." : "Address saved successfully.");
+      
+      // Reset form after submission
+      setAddress({
+        Resident: "",
+        street: "",
+        location: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
+        Contact: "",
+        Usernname: "",
+        Email: "",
+      });
+      setEditingId(null);
+      fetchAddresses(userId);
+      setErrorMessage("");
     } catch (error) {
       console.error("Error saving address:", error);
       setErrorMessage("Error saving address. Please try again.");
@@ -165,57 +139,31 @@ const AddressForm = () => {
 
   return (
     <div className="contain">
-            <div className="add-container">
-        <div className="address-list">
-          <h2>Saved Addresses</h2>
-          {loading && <p>Loading...</p>}
-          {addresses.length > 0 ? (
-            <ul>
-              {addresses.map((addr) => (
-                <li key={addr.id}>
-                  <p>{addr.Resident}</p>
-                  <p>{addr.street}, {addr.location}</p>
-                  <p>{addr.city} - {addr.zipCode}</p>
-                  <p>{addr.state}, {addr.country}</p>
-                  <p>Name: {addr.Usernname}</p>
-                  <p>Contact: {addr.Contact}</p>
-                  <button className="edit" onClick={() => handleEdit(addr.id)}>Edit</button>
-                  <button className="Delete" onClick={() => handleDelete(addr.id)}>Delete</button>
+      <div className="Profile">
+        {addresses.map((addr) => (
+          <ul key={addr.id}>
+            <li>
+              <div className="profile-data">
+                <div className="image-container">
+                  <div className="img">
+                  <Profile />
+                  </div>
+               <div className="data">
+               <h1>{addr.Usernname}</h1>
+               <li>
+                  <strong>Email: </strong> {userEmail}
                 </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No addresses saved.</p>
-          )}
-        </div>
-      </div>
-          <div className="Profile"> 
-      {addresses.map((addr) => (
-        <ul>
-                <li key={addr.id}>
-                  {addr.Image && (
-                    <div className="image-container">
-                      <img 
-                        src={addr.Image} 
-                        alt="Address" 
-                        className="address-image" 
-                        style={{ width: "100px", height: "100px", objectFit: "cover" }} 
-                      />
-                    <div className="profile-data">
-                      <h1>{addr.Usernname}</h1>
-                   <li>
-                   <strong>Email: </strong> {userEmail}
-                   </li>  
-                   <li>
-                   <strong>Contact: </strong> {addr.Contact}
-                   </li>
-                    </div>
-                    </div>
-                  )}
+                <li>
+                  <strong>Contact: </strong> {addr.Contact}
                 </li>
-                </ul>
-              ))}
+               </div>
+               </div> 
+              </div>
+            </li>
+          </ul>
+        ))}
       </div>
+
       <div className="address-form">
         <h2>{editingId ? "Edit Address" : "Save Address"}</h2>
         {errorMessage && <Error message={errorMessage} />}
@@ -257,15 +205,41 @@ const AddressForm = () => {
             <label> Usernname:
             <input type="text" name="Usernname" value={address.Usernname} onChange={handleChange} required />
             </label>
-            <label> Upload Image:
-            <input type="file" name="Image" onChange={handleImageChange} required />
+            <label> Email:
+            <input type="text" name="Email" value={address.Email} onChange={handleChange} required />
             </label>
           </div>
           <button type="submit">{editingId ? "Update Address" : "Save Address"}</button>
         </form>
       </div>
+      <div className="add-container">
+        <div className="address-list">
+          <h2>Saved Addresses</h2>
+          {loading && <p>Loading...</p>}
+          {addresses.length > 0 ? (
+            <ul>
+              {addresses.map((addr) => (
+                <li key={addr.id}>
+                  <p>{addr.Resident}</p>
+                  <p>{addr.street}, {addr.location}</p>
+                  <p>{addr.city} - {addr.zipCode}</p>
+                  <p>{addr.state}, {addr.country}</p>
+                  <p>Name: {addr.Usernname}</p>
+                  <p>Contact: {addr.Contact}</p>
+                  <button className="edit" onClick={() => handleEdit(addr.id)}>Edit</button>
+                  <button className="Delete" onClick={() => handleDelete(addr.id)}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No addresses saved.</p>
+          )}
+        </div>
+      </div>
+
     </div>
   );
 };
 
 export default AddressForm;
+  

@@ -1,118 +1,234 @@
-import React, { useState, useEffect } from 'react';
-import { storage, db } from './firebase';  
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useRef } from "react";
+import { db } from "./firebase";
+import { getAuth } from "firebase/auth";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import Error from "./Error";
 
-const Profile = ({ userId }) => {
-  const [file, setFile] = useState(null);
-  const [progress, setProgress] = useState(0);
-  const [uploadError, setUploadError] = useState(null);
+const Profile = () => {
   const [profileImage, setProfileImage] = useState(null);
-  const [isNewPhoto, setIsNewPhoto] = useState(false); 
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(null);
+  const [uploadSuccess, setUploadSuccess] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false); // State for delete button loading
+  const fileInputRef = useRef(null);
 
-  // Fetch profile image URL from Firestore
   useEffect(() => {
     const fetchProfileImage = async () => {
       try {
-        const userDoc = await getDoc(doc(db, 'users', userId));
-        if (userDoc.exists()) {
-          setProfileImage(userDoc.data().profileImage || null);
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) return;
+
+        const userId = currentUser.uid;
+        const docRef = doc(db, `users/${userId}/profilePic/image`);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setUploadedImageUrl(docSnap.data().profilePic);
         }
       } catch (error) {
-        console.log('Error fetching profile image:', error);
+        console.error("Error fetching profile image:", error.message);
       }
     };
 
     fetchProfileImage();
-  }, [userId]);
+  }, []);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      setIsNewPhoto(true);  // Mark that a new photo is selected
-    }
+  const handleImageChange = (e) => {
+    setProfileImage(e.target.files[0]);
   };
 
-  const handleUpload = () => {
-    if (!file) {
-      alert('Please select an image file.');
-      return;
-    }
-  
-    const storageRef = ref(storage, `/users/${userId}/Profile/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-  
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const prog = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setProgress(prog);
-      },
-      (error) => {
-        setUploadError(error.message);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          // Save the profile image URL to Firestore under users/userId/profile
-          setDoc(doc(db, 'users', userId), {
-            profile: { image: downloadURL }  // Save the image URL in the profile field
-          }, { merge: true }).then(() => {
-            setProfileImage(downloadURL);
-            setIsNewPhoto(false);  // Reset new photo state after upload
-            alert('Profile image uploaded successfully!');
-          }).catch((error) => {
-            setUploadError('Error saving URL to Firestore: ' + error.message);
-          });
-        });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsUploading(true);
+
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        setUploadError("No user is currently logged in.");
+        startTimer();
+        setIsUploading(false);
+        return;
       }
-    );
-  };
-  
 
-  const handleChangePhoto = () => {
-    setFile(null);
-    setIsNewPhoto(false); // Reset the new photo state
-    setProfileImage(null); // Optionally, reset the current profile image as well
-    alert('Please upload a new photo.');
+      const userId = currentUser.uid;
+
+      if (profileImage) {
+        const reader = new FileReader();
+        reader.readAsDataURL(profileImage);
+
+        reader.onload = async () => {
+          const imageUrl = reader.result;
+
+          await setDoc(
+            doc(db, `users/${userId}/profilePic/image`),
+            {
+              profilePic: imageUrl,
+              uploadedAt: new Date(),
+            },
+            { merge: true }
+          );
+
+          setUploadedImageUrl(imageUrl);
+          setProfileImage(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          setUploadSuccess("Profile picture updated successfully.");
+          setUploadError("");
+          startTimer();
+          setIsUploading(false);
+        };
+
+        reader.onerror = () => {
+          setUploadError("Error reading the file.");
+          setIsUploading(false);
+          startTimer();
+        };
+      } else {
+        setUploadError("Please upload an image.");
+        setIsUploading(false);
+        startTimer();
+      }
+    } catch (error) {
+      setUploadError("Error uploading image: " + error.message);
+      setIsUploading(false);
+      startTimer();
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);  // Set to true when deletion starts
+
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) return;
+
+      const userId = currentUser.uid;
+      await deleteDoc(doc(db, `users/${userId}/profilePic/image`));
+
+      setUploadedImageUrl(null);
+      setUploadSuccess("Profile picture deleted successfully.");
+      startTimer();
+    } catch (error) {
+      setUploadError("Error deleting image: " + error.message);
+      startTimer();
+    } finally {
+      setIsDeleting(false);  // Set to false after deletion is complete (success or error)
+    }
+  };
+
+  const handleChangeClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const startTimer = () => {
+    setTimeout(() => {
+      setUploadSuccess("");
+      setUploadError("");
+    }, 3000);
   };
 
   return (
     <div className="profile-container">
-      <h2>{profileImage ? 'Change Profile Image' : 'Upload Profile Image'}</h2>
-      
-      {profileImage ? (
-        <div>
-          <img src={profileImage} alt="Profile" className="profile-img" />
-          <p>Click below to change your profile photo.</p>
-        </div>
-      ) : (
-        <p>No profile image yet. Please upload a photo.</p>
-      )}
+      {uploadSuccess && <p className="success-message">{uploadSuccess}</p>}
+      {uploadError && <Error message={uploadError} />}
+      <div className="profile-form-wrapper">
+        <img
+          src={uploadedImageUrl || "user.png"}
+          alt="Profile"
+          className="profile-image"
+        />
 
-      {/* File input with custom label */}
-      <label htmlFor="file-upload" className="file-upload-label">
-        {isNewPhoto ? 'Change Photo' : 'Choose Photo'}
-      </label>
-      <input 
-        id="file-upload"
-        type="file" 
-        onChange={handleFileChange} 
-        className="file-upload-input"
-        style={{ display: 'none' }} // Hide default input field
-      />
-
-      {/* Show either "Upload Photo" or "Change Photo" button */}
-      {isNewPhoto ? (
-        <div>
-          <button onClick={handleUpload} className="upload-button">Upload Photo</button>
-        </div>
-      ) : profileImage ? (
-        <button onClick={handleChangePhoto} className="change-button">Change</button>
-      ) : null}
-
-      {progress > 0 && <p>Uploading: {Math.round(progress)}%</p>}
-      {uploadError && <p className="error-text">{uploadError}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="profile-input-group">
+            {!profileImage ? (
+              <>
+                {uploadedImageUrl ? (
+                  <>
+                    <button
+                      type="button"
+                      className="change"
+                      onClick={handleChangeClick}
+                    >
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      className="Delete-btn"
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <span>
+                          <img
+                            src="loading.gif"
+                            alt="Loading..."
+                            style={{
+                              width: "20px",
+                              marginRight: "10px",
+                              verticalAlign: "middle",
+                            }}
+                          />
+                          Deleting...
+                        </span>
+                      ) : (
+                        "Delete"
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="select-btn"
+                    onClick={handleChangeClick}
+                  >
+                    Select Image
+                  </button>
+                )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  style={{ display: "none" }}
+                />
+              </>
+            ) : (
+              <button
+                type="submit"
+                className="profile-submit-btn"
+                disabled={isUploading}
+              >
+                {isUploading ? (
+                  <span>
+                    <img
+                      src="loading.gif"
+                      alt="Loading..."
+                      style={{
+                        width: "20px",
+                        marginRight: "10px",
+                        verticalAlign: "middle",
+                      }}
+                    />
+                    Uploading...
+                  </span>
+                ) : (
+                  "Upload"
+                )}
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

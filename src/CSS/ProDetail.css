@@ -220,6 +220,45 @@
     background-color: #45a049;
   }
 
+  .loading-cp {
+    display: flex;
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    color: white;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .load-data {
+    display: flex;
+    flex-direction: column; /* Stack image and text vertically */
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .loading-icon {
+    margin-bottom: 10px; /* Adds some space between the image and text */
+  }
+
+  .loading-cp .load-icon{
+    width: 70%;
+    height: fit-content;
+    border-radius: 0.3rem;
+  }
+  
+  .loading-cp .cp{
+    font-size: larger;
+    font-weight: bold;
+    background-color: white;
+    padding: 10px;
+    color: black;
+    border-radius: 0.3rem;
+  }
+
   .cancel-button{
     margin: 15px;
     padding: 10px 15px;
@@ -241,6 +280,7 @@
 
     .product-details img {
         width: 100%; /* Full width for mobile */
+        height: fit-content;
         margin-right: 0; /* Remove horizontal spacing */
         margin-bottom: 20px; /* Add vertical spacing */
     }
@@ -260,10 +300,20 @@
     .addr-Cust {
         width: 100%; /* Full width for mobile */
         justify-content: center; /* Center-align the address list */
+        padding: 0%;
+        margin: 0%;
     }
 
     .addr-Cust .address-list {
-        width: 90%; /* Slightly reduce width for better view on mobile */
+        width: 100%; /* Slightly reduce width for better view on mobile */
+        margin: 0%;
+    }
+
+    .loading-cp .load-icon{
+      width: 100%;
+      height: fit-content;
+      padding: 20px;
+      border-radius: 2rem;
     }
 }
 
