@@ -3,44 +3,29 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import emailjs from "@emailjs/browser";
 
 const Scanner = () => {
-  const [isScanning, setIsScanning] = useState(false);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState(null);
   const [message, setMessage] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const scannerRef = useRef(null);
 
   useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear();
-      }
-    };
-  }, []);
-
-  const startScanner = () => {
-    setIsScanning(true);
     scannerRef.current = new Html5QrcodeScanner("reader", {
       fps: 10,
       qrbox: { width: 250, height: 250 },
-      supportedScanTypes: [Html5QrcodeScanner.SCAN_TYPE_CAMERA],
     });
 
     scannerRef.current.render(
       (decodedText) => {
         try {
           const parsedData = JSON.parse(decodedText);
-          const buyerEmail = parsedData.buyerEmail || "";
-
-          if (!buyerEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            setMessage("Invalid email found in QR code.");
+          if (!parsedData.buyerEmail || !/\S+@\S+\.\S+/.test(parsedData.buyerEmail)) {
+            setMessage("Invalid email in QR code.");
             return;
           }
-
-          setEmail(buyerEmail);
-          setIsScanning(false);
-          scannerRef.current.clear(); // Stop scanning
-          sendOtp(buyerEmail);
+          setEmail(parsedData.buyerEmail);
+          sendOtp(parsedData.buyerEmail);
         } catch (error) {
           console.error("Invalid QR Code Data:", error);
           setMessage("Failed to read QR code.");
@@ -48,26 +33,33 @@ const Scanner = () => {
       },
       (errorMessage) => console.log("Scan Error:", errorMessage)
     );
-  };
 
-  const sendOtp = (buyerEmail) => {
+    return () => {
+      scannerRef.current?.clear();
+    };
+  }, []);
+
+  const sendOtp = (recipientEmail) => {
+    setOtpSent(true);
     setMessage("Sending OTP...");
+
     const otpCode = Math.floor(100000 + Math.random() * 900000);
     setGeneratedOtp(otpCode);
 
     const emailParams = {
-      to_email: buyerEmail,
+      to_email: recipientEmail,
       otp_code: otpCode,
     };
 
     emailjs
-      .send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams, "YOUR_PUBLIC_KEY")
+      .send("service_bjfvyin", "template_3tpys9h", emailParams, "gkrWAPa8psVVZhdbT")
       .then(() => {
-        setMessage(`OTP sent to ${buyerEmail}`);
+        setMessage(`OTP sent to ${recipientEmail}`);
       })
       .catch((error) => {
         console.error("EmailJS Error:", error);
         setMessage("Error sending OTP.");
+        setOtpSent(false);
       });
   };
 
@@ -78,7 +70,7 @@ const Scanner = () => {
     }
 
     if (parseInt(otp) === generatedOtp) {
-      setMessage("✅ OTP Verified! Buyer authenticated.");
+      setMessage("✅ OTP Verified! Email authenticated.");
       setGeneratedOtp(null);
     } else {
       setMessage("❌ Incorrect OTP. Try again.");
@@ -87,13 +79,16 @@ const Scanner = () => {
 
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>QR Code Scanner & OTP Verification</h2>
-      {!isScanning && !email && <button onClick={startScanner}>Start Scan</button>}
-      {isScanning && <div id="reader"></div>}
+      <h2>QR'S Code Scanner & OTP Verification</h2>
+      <div id="reader"></div>
 
-      {email && <h3>OTP sent to: {email}</h3>}
+      {email && (
+        <div>
+          <h3>Email: {email}</h3>
+        </div>
+      )}
 
-      {generatedOtp !== null && (
+      {otpSent && (
         <div>
           <h3>Enter OTP</h3>
           <input
