@@ -16,12 +16,12 @@ const Scanner = () => {
       fps: 10,
       qrbox: { width: 250, height: 250 },
     });
-  
+
     scannerRef.current.render(
       (decodedText) => {
         try {
           let extractedEmail;
-  
+
           // If QR code contains JSON, parse it
           if (decodedText.startsWith("{") && decodedText.endsWith("}")) {
             const parsedData = JSON.parse(decodedText);
@@ -36,13 +36,13 @@ const Scanner = () => {
             }
             extractedEmail = decodedText;
           }
-  
+
           setEmail(extractedEmail);
           setMessage("✅ Email detected! Click 'Send OTP' to verify.");
           setError(""); // Clear previous errors
-        } catch (error) {
-          console.error("QR Code Error:", error);
-          setError("⚠️ QR Code Error: " + error.message);
+        } catch (err) {
+          console.error("QR Code Error:", err);
+          setError(`⚠️ QR Code Error: ${err.message}\n\nStack Trace:\n${err.stack}`);
         }
       },
       (errorMessage) => {
@@ -50,12 +50,11 @@ const Scanner = () => {
         setError(`⚠️ Scanner Error: ${errorMessage}`);
       }
     );
-  
+
     return () => {
       scannerRef.current?.clear();
     };
   }, []);
-  
 
   const sendOtp = () => {
     if (!email) {
@@ -86,9 +85,9 @@ const Scanner = () => {
         setMessage(`✅ OTP sent to ${email}`);
         setError(""); // Clear previous errors
       })
-      .catch((error) => {
-        console.error("EmailJS Error:", error);
-        setError("⚠️ Error sending OTP. Check console for details.");
+      .catch((err) => {
+        console.error("EmailJS Error:", err);
+        setError(`⚠️ Error sending OTP: ${err.message}\n\nStack Trace:\n${err.stack}`);
         setOtpSent(false);
       });
   };
@@ -136,7 +135,21 @@ const Scanner = () => {
       )}
 
       {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>} {/* ✅ Show Errors in Red */}
+      {error && (
+        <pre
+          style={{
+            color: "red",
+            fontWeight: "bold",
+            backgroundColor: "#ffe6e6",
+            padding: "10px",
+            whiteSpace: "pre-wrap", // ✅ Keeps formatting for stack trace
+            textAlign: "left",
+            borderRadius: "5px",
+          }}
+        >
+          {error}
+        </pre>
+      )}
     </div>
   );
 };
