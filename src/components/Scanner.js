@@ -3,12 +3,12 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import emailjs from "@emailjs/browser";
 
 const Scanner = () => {
-  const [email, setEmail] = useState("");
+  const [scannedData, setScannedData] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState(null);
   const [message, setMessage] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [scanned, setScanned] = useState(false);
   const scannerRef = useRef(null);
 
   useEffect(() => {
@@ -21,16 +21,10 @@ const Scanner = () => {
       (decodedText) => {
         try {
           const parsedData = JSON.parse(decodedText);
-          if (!parsedData.buyerEmail || !/\S+@\S+\.\S+/.test(parsedData.buyerEmail)) {
-            setMessage("Invalid email in QR code.");
-            return;
-          }
-          setEmail(parsedData.buyerEmail);
-          setScanned(true); // Show email and "Send OTP" button
-          setMessage("");
+          setScannedData(parsedData);
+          setPhoneNumber(parsedData.buyerContact || "");
         } catch (error) {
           console.error("Invalid QR Code Data:", error);
-          setMessage("Failed to read QR code.");
         }
       },
       (errorMessage) => console.log("Scan Error:", errorMessage)
@@ -42,23 +36,26 @@ const Scanner = () => {
   }, []);
 
   const sendOtp = () => {
-    if (!email) return;
-
+    if (!phoneNumber.match(/^\d{10}$/)) {
+      setMessage("Invalid phone number detected.");
+      return;
+    }
+  
     setOtpSent(true);
     setMessage("Sending OTP...");
-
+  
     const otpCode = Math.floor(100000 + Math.random() * 900000);
     setGeneratedOtp(otpCode);
-
+  
     const emailParams = {
-      to_email: email,
+      to_email: `buyer_${phoneNumber}@example.com`, // Fixed template literal syntax
       otp_code: otpCode,
     };
-
+  
     emailjs
       .send("service_bjfvyin", "template_3tpys9h", emailParams, "gkrWAPa8psVVZhdbT")
       .then(() => {
-        setMessage(`OTP sent to ${email}`);
+        setMessage(`OTP sent to ${phoneNumber}`); // Fixed template literal syntax
       })
       .catch((error) => {
         console.error("EmailJS Error:", error);
@@ -66,6 +63,7 @@ const Scanner = () => {
         setOtpSent(false);
       });
   };
+  
 
   const verifyOtp = () => {
     if (!otp.trim() || otp.length !== 6) {
@@ -74,7 +72,7 @@ const Scanner = () => {
     }
 
     if (parseInt(otp) === generatedOtp) {
-      setMessage("✅ OTP Verified! Email authenticated.");
+      setMessage("✅ OTP Verified! Buyer authenticated.");
       setGeneratedOtp(null);
     } else {
       setMessage("❌ Incorrect OTP. Try again.");
@@ -86,23 +84,32 @@ const Scanner = () => {
       <h2>QR Code Scanner & OTP Verification</h2>
       <div id="reader"></div>
 
-      {scanned && (
+      {scannedData && (
         <div>
-          <h3>Email: {email}</h3>
-          {!otpSent ? (
-            <button onClick={sendOtp}>Send OTP</button>
-          ) : (
-            <div>
-              <h3>Enter OTP</h3>
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter OTP"
-              />
-              <button onClick={verifyOtp}>Verify OTP</button>
-            </div>
-          )}
+          <h3>Scanned QR Data:</h3>
+          <pre>{JSON.stringify(scannedData, null, 2)}</pre>
+        </div>
+      )}
+
+      {phoneNumber && (
+        <div>
+          <h3>Buyer Contact: {phoneNumber}</h3>
+          <button onClick={sendOtp} disabled={otpSent}>
+            {otpSent ? "OTP Sent" : "Send OTP"}
+          </button>
+        </div>
+      )}
+
+      {generatedOtp !== null && (
+        <div>
+          <h3>Enter OTP</h3>
+          <input
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            placeholder="Enter OTP"
+          />
+          <button onClick={verifyOtp}>Verify OTP</button>
         </div>
       )}
 
