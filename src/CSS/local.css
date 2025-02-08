@@ -1,5 +1,4 @@
 .local-data-container {
-    padding: 20px;
     font-family: Arial, sans-serif;
   }
   
@@ -11,6 +10,7 @@
   }
   
   .grid-container {
+    padding: 20px;
     display: grid;
     gap: 20px; 
     grid-template-columns: repeat(6, 1fr);
@@ -59,6 +59,7 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     display: block;
+    margin-top: 2rem;
   }
   
   .price-filter-buttons {
@@ -74,6 +75,7 @@
     border: 1px solid #ccc;
     background-color: #f9f9f9;
     cursor: pointer;
+    color: black;
     border-radius: 5px;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
@@ -119,6 +121,12 @@
     .msg img{
       width: 10%;
     }
+  
+    .local-data-container .search-input{
+      width: 80%;
+      margin-top: 2rem;
+      padding: 10px;
+    }
   }
   
   @media (max-width: 768px) {
@@ -126,6 +134,7 @@
       grid-template-columns: repeat(2, 1fr); 
       margin-bottom: 4rem;
     }
+
   }
   
   

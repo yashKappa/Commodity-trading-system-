@@ -63,7 +63,6 @@ const LocalData = ({ userId }) => {
     <div className="local-data-container">
       {!selectedProductId ? (
         <>
-          <h2>Your Local Products</h2>
           <input
             type="text"
             placeholder="Search products..."

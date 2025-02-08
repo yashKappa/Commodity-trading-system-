@@ -1,23 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import emailjs from "@emailjs/browser";
+import "../CSS/Scanner.css";
 
 const Scanner = () => {
-  const [email, setEmail] = useState(""); // Input field email
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const scannerRef = useRef(null);
+  const scannerInstance = useRef(null);
+  const scannerContainer = useRef(null);
 
-  useEffect(() => {
-    scannerRef.current = new Html5QrcodeScanner("reader", {
+  const initializeScanner = () => {
+    if (scannerInstance.current) {
+      scannerInstance.current.clear();
+    }
+
+    scannerInstance.current = new Html5QrcodeScanner("reader", {
       fps: 10,
       qrbox: { width: 250, height: 250 },
     });
 
-    scannerRef.current.render(
+    scannerInstance.current.render(
       (decodedText) => {
         try {
           let extractedEmail;
@@ -34,9 +40,11 @@ const Scanner = () => {
             extractedEmail = decodedText;
           }
 
-          setEmail(extractedEmail); // Populate input field
+          setEmail(extractedEmail);
           setMessage("✅ Email detected! You can edit it if needed.");
           setError("");
+
+          scannerInstance.current.clear(); // Stop scanner after success
         } catch (err) {
           setError(`⚠️ QR Code Error: ${err.message}`);
         }
@@ -45,11 +53,22 @@ const Scanner = () => {
         setError(`⚠️ Scanner Error: ${errorMessage}`);
       }
     );
+  };
 
+  useEffect(() => {
+    initializeScanner();
     return () => {
-      scannerRef.current?.clear();
+      if (scannerInstance.current) {
+        scannerInstance.current.clear();
+      }
     };
   }, []);
+
+  const stopScanner = () => {
+    if (scannerInstance.current) {
+      scannerInstance.current.clear();
+    }
+  };
 
   const sendOtp = () => {
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
@@ -63,7 +82,7 @@ const Scanner = () => {
     setGeneratedOtp(otpCode);
 
     const emailParams = {
-      to_email: email, // Send OTP to input email
+      to_email: email,
       otp: otpCode,
     };
 
@@ -90,44 +109,56 @@ const Scanner = () => {
       setMessage("✅ OTP Verified! Email authenticated.");
       setGeneratedOtp(null);
       setError("");
+
+      setTimeout(() => {
+        setEmail("");
+        setOtp("");
+        setOtpSent(false);
+        stopScanner(); // Stop scanner after 4 seconds
+      }, 4000);
     } else {
       setError("❌ Incorrect OTP. Try again.");
     }
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
+    <div className="scanner">
       <h2>QR Code Scanner & OTP Verification</h2>
-      <div id="reader"></div>
+      <div id="reader" ref={scannerContainer}></div>
 
-      <div>
-        <h3>Enter Email:</h3>
-        <input
-          type="email"
-          value={email} // Email appears inside input field
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter or scan email"
-        />
-        <button onClick={sendOtp} disabled={otpSent}>
-          {otpSent ? "✅ OTP Sent" : "📩 Send OTP"}
-        </button>
-      </div>
-
-      {otpSent && (
-        <div>
-          <h3>Enter OTP</h3>
+      <div className="insert-email">
+        <div className="send-otp">
+          <h3>Enter Email:</h3>
           <input
-            type="text"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Enter OTP"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter or scan email"
           />
-          <button onClick={verifyOtp}>✔ Verify OTP</button>
+          <button onClick={sendOtp} disabled={otpSent}>
+            {otpSent ? "✅ OTP Sent" : "📩 Send OTP"}
+          </button>
         </div>
-      )}
 
-      {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {otpSent && (
+          <div className="verify">
+            <h3>Enter OTP</h3>
+            <input
+              type="number"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter OTP"
+              maxLength="6"
+            />
+            <button onClick={verifyOtp}>✔ Verify OTP</button>
+          </div>
+        )}
+
+        <div className="email-error">
+          {message && <p style={{ color: "green" }}>{message}</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+        </div>
+      </div>
     </div>
   );
 };

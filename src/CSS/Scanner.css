@@ -1,0 +1,86 @@
+/* Centering and basic layout */
+.scanner {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  /* QR Code Scanner Box */
+  #reader {
+    width: 300px;
+    margin: 20px auto;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  
+  /* Input container */
+  .insert-email {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .insert-email input {
+    width: 280px;
+    padding: 5px 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+
+  .insert-email input:focus{
+    outline: none;
+    border: 1px solid black;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.192);
+    transition: 0.3s;
+  }
+  
+  /* Buttons */
+  button {
+    background-color: #444; /* Dark gray */
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin: 10px 5px;
+  }
+  
+  button:hover {
+    background-color: #222; /* Almost black */
+  }
+  
+  button:disabled {
+    background-color: #777; /* Gray */
+    cursor: not-allowed;
+  }
+  
+  /* Message styles */
+  .email-error p {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .email-error p:first-child {
+    color: green;
+  }
+  
+  .email-error p:last-child {
+    color: red;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .scanner {
+      padding: 15px;
+    }
+  
+    .insert-email input {
+      width: 90%;
+    }
+  }
+  
