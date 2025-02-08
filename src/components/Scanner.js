@@ -3,11 +3,11 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import emailjs from "@emailjs/browser";
 
 const Scanner = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(""); // Input field email
   const [otp, setOtp] = useState("");
   const [generatedOtp, setGeneratedOtp] = useState(null);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState(""); // ✅ New state to store errors
+  const [error, setError] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const scannerRef = useRef(null);
 
@@ -21,8 +21,6 @@ const Scanner = () => {
       (decodedText) => {
         try {
           let extractedEmail;
-
-          // If QR code contains JSON, parse it
           if (decodedText.startsWith("{") && decodedText.endsWith("}")) {
             const parsedData = JSON.parse(decodedText);
             if (!parsedData.Email || !/\S+@\S+\.\S+/.test(parsedData.Email)) {
@@ -30,23 +28,20 @@ const Scanner = () => {
             }
             extractedEmail = parsedData.Email;
           } else {
-            // If QR code is plain text, check if it's a valid email
             if (!/\S+@\S+\.\S+/.test(decodedText)) {
               throw new Error("Invalid email format in QR code.");
             }
             extractedEmail = decodedText;
           }
 
-          setEmail(extractedEmail);
-          setMessage("✅ Email detected! Click 'Send OTP' to verify.");
-          setError(""); // Clear previous errors
+          setEmail(extractedEmail); // Populate input field
+          setMessage("✅ Email detected! You can edit it if needed.");
+          setError("");
         } catch (err) {
-          console.error("QR Code Error:", err);
-          setError(`⚠️ QR Code Error: ${err.message}\n\nStack Trace:\n${err.stack}`);
+          setError(`⚠️ QR Code Error: ${err.message}`);
         }
       },
       (errorMessage) => {
-        console.log("Scan Error:", errorMessage);
         setError(`⚠️ Scanner Error: ${errorMessage}`);
       }
     );
@@ -57,51 +52,44 @@ const Scanner = () => {
   }, []);
 
   const sendOtp = () => {
-    if (!email) {
-      setError("⚠️ Error: No valid email found.");
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      setError("⚠️ Please enter a valid email.");
       return;
     }
 
     setOtpSent(true);
     setMessage("📩 Sending OTP...");
-
     const otpCode = Math.floor(100000 + Math.random() * 900000);
     setGeneratedOtp(otpCode);
 
     const emailParams = {
-      to_email: email,
-      otp_code: otpCode.toString(),
+      to_email: email, // Send OTP to input email
+      otp: otpCode,
     };
 
     emailjs
-      .send(
-        "service_bjfvyin", // ✅ Your EmailJS Service ID
-        "__ejs-test-mail-service__", // ✅ Your EmailJS Template ID
-        emailParams,
-        "gkrWAPa8psVVZhdbT" // ✅ Your EmailJS Public Key
-      )
+      .send("service_bjfvyin", "template_sxmabpf", emailParams, "gkrWAPa8psVVZhdbT")
       .then((response) => {
-        console.log("Email sent successfully:", response);
+        console.log("✅ Email sent successfully:", response);
         setMessage(`✅ OTP sent to ${email}`);
-        setError(""); // Clear previous errors
+        setError("");
       })
       .catch((err) => {
-        console.error("EmailJS Error:", err);
-        setError(`⚠️ Error sending OTP: ${err.message}\n\nStack Trace:\n${err.stack}`);
+        console.error("⚠️ EmailJS Error:", err);
+        setError(`⚠️ Error sending OTP: ${err.text || err.message || "Unknown Error"}`);
         setOtpSent(false);
       });
   };
 
   const verifyOtp = () => {
     if (!otp.trim() || otp.length !== 6) {
-      setError("⚠️ Error: Enter a valid 6-digit OTP.");
+      setError("⚠️ Enter a valid 6-digit OTP.");
       return;
     }
-
     if (parseInt(otp) === generatedOtp) {
       setMessage("✅ OTP Verified! Email authenticated.");
       setGeneratedOtp(null);
-      setError(""); // Clear errors after success
+      setError("");
     } else {
       setError("❌ Incorrect OTP. Try again.");
     }
@@ -112,14 +100,18 @@ const Scanner = () => {
       <h2>QR Code Scanner & OTP Verification</h2>
       <div id="reader"></div>
 
-      {email && (
-        <div>
-          <h3>Email: {email}</h3>
-          <button onClick={sendOtp} disabled={otpSent}>
-            {otpSent ? "✅ OTP Sent" : "📩 Send OTP"}
-          </button>
-        </div>
-      )}
+      <div>
+        <h3>Enter Email:</h3>
+        <input
+          type="email"
+          value={email} // Email appears inside input field
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter or scan email"
+        />
+        <button onClick={sendOtp} disabled={otpSent}>
+          {otpSent ? "✅ OTP Sent" : "📩 Send OTP"}
+        </button>
+      </div>
 
       {otpSent && (
         <div>
@@ -135,21 +127,7 @@ const Scanner = () => {
       )}
 
       {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && (
-        <pre
-          style={{
-            color: "red",
-            fontWeight: "bold",
-            backgroundColor: "#ffe6e6",
-            padding: "10px",
-            whiteSpace: "pre-wrap", // ✅ Keeps formatting for stack trace
-            textAlign: "left",
-            borderRadius: "5px",
-          }}
-        >
-          {error}
-        </pre>
-      )}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };
