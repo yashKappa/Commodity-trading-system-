@@ -130,7 +130,7 @@ const ProductDetails = ({ productId }) => {
 
     if (selectedPaymentMethod) {
       const totalPrice = product.price * selectedQuantity + 30; // Adding delivery charge
-      const orderId = `${product.id}_${Date.now()}`; // Unique Order ID
+      const orderId = `${product.id}`; // Unique Order ID
 
       try {
         // Save purchase data under the buyer's Firestore document

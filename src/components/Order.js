@@ -122,6 +122,7 @@ const Order = () => {
                     <p><span>Total Price:</span> ₹{selectedProduct.totalPrice}</p>
                     <p><span>Payment Method:</span> {selectedProduct.paymentMethod}</p>
                     <p><span>Date:</span> {new Date(selectedProduct.date).toLocaleDateString()}</p>
+                    <p><span>Status :</span> {selectedProduct.status}</p>
                   </div>
                 </div>
                 {/* Display Address in Structured Format */}
@@ -135,12 +136,23 @@ const Order = () => {
                     <p>{selectedProduct.address?.Contact}</p>
                   </div>
                 </div>
+
+                <div className='data'>
+                  <strong>{selectedProduct.status}</strong>
+                  <div className='sub-data'>
+                    <img
+                      src={selectedProduct.delivery}
+                      alt={selectedProduct.productName}
+                      className="product-image"
+                    />                  </div>
+                </div>
+
                 {selectedProduct.qrCode && (
                   <div className='ad'>
                     <p><strong>Scan QR code after delivery</strong></p>
-                  <div className='scan-data'>
-                    <QRCodeCanvas value={JSON.stringify(JSON.parse(selectedProduct.qrCode), null, 2)} size={150} />
-                  </div>
+                    <div className='scan-data'>
+                      <QRCodeCanvas value={JSON.stringify(JSON.parse(selectedProduct.qrCode), null, 2)} size={150} />
+                    </div>
                   </div>
                 )}
               </div>
